@@ -3,6 +3,7 @@ import { Avatar, List } from 'antd';
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import styled, { keyframes, css } from 'styled-components';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ChatMessage } from '../types/chat';
@@ -127,6 +128,19 @@ const MessageBubble = styled.div<{ $position: 'left' | 'right'; $isStreaming?: b
       text-align: left;
     }
     
+    /* 支持Markdown表格对齐语法 */
+    th[align="center"], td[align="center"] {
+      text-align: center;
+    }
+    
+    th[align="right"], td[align="right"] {
+      text-align: right;
+    }
+    
+    th[align="left"], td[align="left"] {
+      text-align: left;
+    }
+    
     th {
       background-color: ${props => props.$position === 'right' ? 'rgba(255,255,255,0.1)' : '#f9fafb'};
       font-weight: 600;
@@ -166,6 +180,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
         <MessageBubble $position={position} $isStreaming={message.isStreaming}>
           <div className="markdown-content">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
