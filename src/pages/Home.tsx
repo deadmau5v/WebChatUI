@@ -112,7 +112,7 @@ const Home: React.FC = () => {
   };
 
   // 处理表单值变化
-  const handleValuesChange = (changedValues: any, allValues: any) => {
+  const handleValuesChange = (_changedValues: any, allValues: any) => {
     updateUrlParams(allValues);
   };
 
