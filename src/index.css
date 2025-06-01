@@ -23,110 +23,11 @@ body {
   overflow: hidden;
 }
 
-/* Advanced settings customization */
-.advanced-settings .ant-collapse-header {
-  padding: 8px 0 !important;
-}
+/* Advanced settings styles moved to styled-components */
 
-.advanced-settings .ant-collapse-content-box {
-  padding: 0 !important;
-}
+/* Component-specific styles moved to styled-components */
 
-.advanced-settings .ant-form-item:last-child {
-  margin-bottom: 0;
-}
-
-/* Message list customization */
-.ant-list-item {
-  border-bottom: none !important;
-  padding: 8px 0 !important;
-}
-
-/* Empty state customization */
-.ant-empty {
-  margin: 32px 0;
-}
-
-.ant-empty .anticon {
-  margin-bottom: 16px;
-}
-
-.ant-empty-description {
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 16px;
-}
-
-/* Card customization */
-.ant-card {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-  border-radius: 16px !important;
-  border: none !important;
-}
-
-/* Input customization */
-.ant-input-search .ant-input {
-  height: 44px;
-  padding: 8px 12px;
-  font-size: 14px;
-  border-radius: 12px;
-  border-right: none;
-}
-
-.ant-input-search .ant-input:focus {
-  box-shadow: none;
-}
-
-.ant-input-search .ant-input-group-addon {
-  background-color: transparent;
-  border: none;
-  padding-right: 0;
-}
-
-.ant-input-search .ant-input-search-button {
-  height: 44px !important;
-  width: 48px !important;
-  border: none !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-}
-
-.ant-input-search .ant-input-search-button:hover {
-  background: none !important;
-}
-
-.ant-input-search .ant-input-search-button > button {
-  display: none;
-}
-
-/* Select customization */
-.ant-select {
-  font-size: 14px;
-}
-
-.ant-select-selector {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.ant-select-selection-item {
-  color: #666;
-}
-
-/* Avatar customization */
-.ant-avatar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
-
-.ant-avatar:hover {
-  transform: scale(1.05);
-}
-
-/* Message animations */
-.ant-list-item {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
+/* Global animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -136,6 +37,11 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Message animations */
+.ant-list-item {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 /* Scrollbar styling */

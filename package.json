@@ -9,13 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@ant-design/icons": "^5.0.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/styled-components": "^5.1.34",
     "antd": "^5.14.1",
     "axios": "^1.6.7",
+    "openai": "^4.28.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^6.22.1",
-    "@ant-design/icons": "^5.0.1",
-    "openai": "^4.28.0"
+    "react-syntax-highlighter": "^15.6.1",
+    "styled-components": "^6.1.18"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",

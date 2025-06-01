@@ -7,6 +7,8 @@ export interface ChatMessage {
     avatar?: string;
     name?: string;
   };
+  isStreaming?: boolean; // 是否正在流式输出
+  id?: string; // 消息唯一标识
 }
 
 // Ollama API 响应类型
