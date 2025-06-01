@@ -3,7 +3,7 @@ import { Input, Button, Card, Typography, message, Form, Collapse } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { validateOllamaUrl } from '../utils/api';
-import { RocketOutlined } from '@ant-design/icons';
+import { RocketOutlined, ShareAltOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -60,6 +60,10 @@ const AdvancedSettings = styled(Collapse)`
 
 const SubmitButton = styled(Button)`
   margin-top: 24px;
+`;
+
+const ShareButton = styled(Button)`
+  margin-top: 12px;
 `;
 
 const Home: React.FC = () => {
@@ -141,6 +145,35 @@ const Home: React.FC = () => {
     }
   };
 
+  // 生成分享链接函数
+  const handleGenerateShareLink = () => {
+    const values = form.getFieldsValue();
+    const currentUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams();
+    
+    if (values.baseUrl && values.baseUrl !== 'http://localhost:11434') {
+      params.set('base_url', values.baseUrl);
+    }
+    
+    if (values.apiKey) {
+      params.set('api_key', values.apiKey);
+    }
+    
+    if (values.defaultModel) {
+      params.set('default_model', values.defaultModel);
+    }
+    
+    const shareUrl = params.toString() ? `${currentUrl}?${params.toString()}` : currentUrl;
+    
+    // 复制到剪贴板
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      message.success('分享链接已复制到剪贴板');
+    }).catch(() => {
+      // 如果复制失败，显示链接让用户手动复制
+      message.info(`分享链接: ${shareUrl}`);
+    });
+  };
+
   return (
     <Container>
       <HomeCard>
@@ -197,6 +230,16 @@ const Home: React.FC = () => {
             >
               开始聊天
             </SubmitButton>
+            
+            <ShareButton 
+              type="default" 
+              size="large"
+              block 
+              icon={<ShareAltOutlined />}
+              onClick={handleGenerateShareLink}
+            >
+              生成分享链接
+            </ShareButton>
           </Form.Item>
         </Form>
       </HomeCard>
