@@ -3,8 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import ChatInterface from '../components/ChatInterface';
 
 const Chat: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const ollamaUrl = searchParams.get('url') || 'http://localhost:11434';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ollamaUrl = searchParams.get('base_url') || 'http://localhost:11434';
   const apiKey = searchParams.get('api_key');
   const defaultModel = searchParams.get('default_model');
 
@@ -14,6 +14,14 @@ const Chat: React.FC = () => {
         ollamaUrl: decodeURIComponent(ollamaUrl),
         apiKey: apiKey || undefined,
         defaultModel: defaultModel || undefined
+      }}
+      updateUrlParams={(validUrl) => {
+        if (validUrl && validUrl !== ollamaUrl) {
+          setSearchParams(params => {
+            params.set('base_url', validUrl);
+            return params;
+          });
+        }
       }}
     />
   );

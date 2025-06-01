@@ -12,10 +12,11 @@ interface ChatInterfaceProps {
     apiKey?: string;
     defaultModel?: string;
   };
+  updateUrlParams?: (validUrl: string) => void;
 }
 
 // 聊天界面组件
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ config }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ config, updateUrlParams }) => {
   // 使用自定义 Hook 管理聊天逻辑
   const {
     messages,
@@ -28,7 +29,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ config }) => {
     sending,
     handleSend,
     clearContext
-  } = useChatLogic(config);
+  } = useChatLogic(config, updateUrlParams);
 
   // 加载状态显示
   if (loading) {

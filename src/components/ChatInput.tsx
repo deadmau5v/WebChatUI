@@ -99,18 +99,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <InputContainer>
       <TopRow>
-        <ModelSelect
-          value={model}
-          onChange={(value: unknown) => onModelChange(value as string)}
-          options={models.map(m => ({ value: m.id, label: m.name }))}
-          placeholder="选择模型"
-          size="large"
-        />
+        {models.length > 0 && (
+          <ModelSelect
+            value={model}
+            onChange={(value: unknown) => onModelChange(value as string)}
+            options={models.map(m => ({ value: m.id, label: m.name }))}
+            placeholder="选择模型"
+            size="large"
+          />
+        )}
         <ClearButton
           icon={<ClearOutlined />}
           onClick={onClearContext}
           title="清理上下文"
           size="large"
+          style={{ marginLeft: models.length === 0 ? 'auto' : undefined }}
         />
       </TopRow>
       <BottomRow>

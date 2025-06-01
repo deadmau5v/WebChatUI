@@ -1,6 +1,6 @@
 import React from 'react';
-import { Avatar, List } from 'antd';
-import { UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { Avatar, List, Collapse } from 'antd';
+import { UserOutlined, RobotOutlined, BulbOutlined } from '@ant-design/icons';
 import styled, { keyframes, css } from 'styled-components';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -165,10 +165,135 @@ interface MessageItemProps {
   message: ChatMessage;
 }
 
+const { Panel } = Collapse;
+
+// 思考内容的样式
+const ThinkingPanel = styled(Panel)`
+  &.ant-collapse-item {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  
+  .ant-collapse-header {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6b7280 !important;
+    padding: 8px 12px !important;
+    background-color: #f3f4f6;
+  }
+  
+  .ant-collapse-content {
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+  }
+  
+  .ant-collapse-content-box {
+    padding: 12px !important;
+    font-style: italic;
+    color: #4b5563;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+`;
+
+// 提取思考内容和主要内容
+interface ProcessedContent {
+  mainContent: string;
+  thinkingContent: string[];
+}
+
+// 处理消息内容，提取思考内容
+// 返回分离的思考内容和主要内容
+const processContent = (content: string, isStreaming?: boolean): ProcessedContent => {
+  const thinkingContent: string[] = [];
+  
+  // 检查是否是流式传输中的思考内容
+  // 如果正在流式传输，且消息以<think>开头，但没有结束标签
+  if (isStreaming && content.trim().startsWith('<think>') && !content.includes('</think>')) {
+    // 去除开始的<think>标签
+    const streamingThinkContent = content.replace('<think>', '').trim();
+    if (streamingThinkContent) {
+      thinkingContent.push(streamingThinkContent);
+    }
+    return { mainContent: '', thinkingContent };
+  }
+  
+  // 正常处理完整的<think>标签
+  const mainContent = content.replace(/<think>(.*?)<\/think>/gs, (_, thinkContent) => {
+    thinkingContent.push(thinkContent.trim());
+    return ''; // 在主要内容中移除<think>标签
+  });
+  
+  return { mainContent, thinkingContent };
+};
+
+// 思考内容组件
+interface ThinkingContentProps {
+  thinkingContent: string[];
+  isStreaming: boolean | undefined;
+}
+
+const ThinkingContent: React.FC<ThinkingContentProps> = ({ thinkingContent, isStreaming }) => {
+  // 如果没有思考内容或内容为空，不渲染任何内容
+  if (thinkingContent.length === 0 || thinkingContent.every(content => !content.trim())) return null;
+  
+  // 如果还在流式传输中，自动展开思考内容
+  // 如果传输完成，默认折叠
+  const defaultActiveKey = isStreaming ? ['thinking'] : [];
+  
+  // 识别流式输出状态的处理样式
+  const panelStyle = isStreaming ? {
+    borderLeft: '3px solid #10b981',
+    transition: 'border-color 0.3s ease'
+  } : {};
+  
+  const headerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    color: isStreaming ? '#10b981' : '#6b7280'
+  };
+  
+  return (
+    <Collapse 
+      ghost={false}
+      defaultActiveKey={defaultActiveKey}
+      style={{ marginBottom: '12px' }}
+    >
+      <ThinkingPanel 
+        style={panelStyle}
+        header={
+          <div style={headerStyle}>
+            <BulbOutlined style={{ 
+              marginRight: '8px',
+              animation: isStreaming ? 'pulse 2s infinite' : 'none'
+            }} />
+            {
+              isStreaming ? 
+              <span>正在思考中...</span> :
+              <span>思考过程</span>
+            }
+          </div>
+        } 
+        key="thinking"
+      >
+        {thinkingContent.map((content, index) => (
+          <div key={index}>{content}</div>
+        ))}
+      </ThinkingPanel>
+    </Collapse>
+  );
+};
+
 // MessageItem 组件
 const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const position = message.position || 'left';
-  const content = message.content || (message.isStreaming ? '正在思考...' : '');
+  const rawContent = message.content || (message.isStreaming ? '正在思考...' : '');
+  const { mainContent, thinkingContent } = processContent(rawContent, message.isStreaming);
 
   return (
     <StyledMessageItem $position={position}>
@@ -179,6 +304,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
         />
         <MessageBubble $position={position} $isStreaming={message.isStreaming}>
           <div className="markdown-content">
+            {/* 渲染思考内容组件 - 放在主要内容上方 */}
+            <ThinkingContent 
+              thinkingContent={thinkingContent} 
+              isStreaming={message.isStreaming} 
+            />
+            
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
@@ -208,7 +339,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
                 }
               }}
             >
-              {content}
+              {mainContent}
             </ReactMarkdown>
           </div>
         </MessageBubble>

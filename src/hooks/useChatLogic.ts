@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import OpenAI from 'openai';
 import { ChatMessage, ModelInfo } from '../types/chat';
-import { fetchModels } from '../utils/api';
+import { fetchModels, validateOllamaUrl } from '../utils/api';
 
 // 配置接口
 interface ChatConfig {
@@ -10,6 +10,9 @@ interface ChatConfig {
   apiKey?: string;
   defaultModel?: string;
 }
+
+// 更新URL参数的回调函数类型
+type UpdateUrlParamsCallback = (validUrl: string) => void;
 
 // Hook 返回值接口
 interface UseChatLogicReturn {
@@ -26,7 +29,7 @@ interface UseChatLogicReturn {
 }
 
 // 聊天逻辑 Hook
-export const useChatLogic = (config: ChatConfig): UseChatLogicReturn => {
+export const useChatLogic = (config: ChatConfig, updateUrlParams?: UpdateUrlParamsCallback): UseChatLogicReturn => {
   // 状态管理
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -38,16 +41,31 @@ export const useChatLogic = (config: ChatConfig): UseChatLogicReturn => {
 
   // 初始化 OpenAI 实例和加载模型列表
   useEffect(() => {
-    const openaiInstance = new OpenAI({
-      baseURL: config.ollamaUrl,
-      apiKey: config.apiKey || 'dummy-key',
-      dangerouslyAllowBrowser: true
-    });
-    setOpenai(openaiInstance);
-
-    const loadModels = async () => {
+    const initialize = async () => {
       try {
-        const availableModels = await fetchModels(config.ollamaUrl, config.apiKey);
+        // 验证 URL并获取有效的 URL
+        const { isValid, validUrl } = await validateOllamaUrl(config.ollamaUrl, config.apiKey);
+        
+        if (!isValid) {
+          message.error('无法连接到 API 服务器');
+          setLoading(false);
+          return;
+        }
+        
+        // 如果有效 URL 与原始 URL 不同，更新 URL 参数
+        if (validUrl && validUrl !== config.ollamaUrl && updateUrlParams) {
+          updateUrlParams(validUrl);
+        }
+        
+        const openaiInstance = new OpenAI({
+          baseURL: validUrl || config.ollamaUrl,
+          apiKey: config.apiKey || 'dummy-key',
+          dangerouslyAllowBrowser: true
+        });
+        setOpenai(openaiInstance);
+        
+        // 加载模型列表
+        const availableModels = await fetchModels(validUrl || config.ollamaUrl, config.apiKey);
         setModels(availableModels);
         if (config.defaultModel) {
           setModel(config.defaultModel);
@@ -56,19 +74,41 @@ export const useChatLogic = (config: ChatConfig): UseChatLogicReturn => {
         }
       } catch (error) {
         message.error('加载模型列表失败');
+        console.error('Initialization error:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadModels();
-  }, [config.ollamaUrl, config.apiKey, config.defaultModel]);
+    initialize();
+  }, [config.ollamaUrl, config.apiKey, config.defaultModel, updateUrlParams]);
 
   // 清理上下文函数
   const clearContext = useCallback(() => {
+    // 如果正在发送消息，先等待完成
+    if (sending) {
+      message.warning('正在响应中，请等待响应完成后再清理上下文');
+      return;
+    }
+    
+    // 如果有流式输出正在进行中，将其标记为完成
+    const hasStreaming = messages.some(msg => msg.isStreaming);
+    if (hasStreaming) {
+      setMessages(prev => prev.map(msg => 
+        msg.isStreaming ? { ...msg, isStreaming: false } : msg
+      ));
+      // 延迟一下再清理，确保流式标记更新完成
+      setTimeout(() => {
+        setMessages([]);
+        message.success('上下文已清理');
+      }, 100);
+      return;
+    }
+    
+    // 正常清理
     setMessages([]);
     message.success('上下文已清理');
-  }, []);
+  }, [sending, messages]);
 
   // 监听模型变化，自动清理上下文
   const [previousModel, setPreviousModel] = useState<string>('');

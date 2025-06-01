@@ -130,7 +130,7 @@ const Home: React.FC = () => {
         }
         
         const params = new URLSearchParams({
-          url: result.validUrl,
+          base_url: result.validUrl,
           ...(values.apiKey && { api_key: values.apiKey }),
           ...(values.defaultModel && { default_model: values.defaultModel })
         });
